@@ -1,6 +1,6 @@
 <template>
   <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
-    <form class="card" @submit.prevent="submit">
+    <form class="card" @submit.prevent="submit" data-testid="form-sign-up" v-if="!successMessage">
       <div class="card-header text-center">
         <h1>Sign Up</h1>
       </div>
@@ -26,6 +26,7 @@
             v-model="formState.passwordRepeat"
           />
         </div>
+        <div v-if="errorMessages" class="alert alert-danger">{{ errorMessages }}</div>
         <div class="text-center">
           <button class="btn btn-primary" :disabled="isDisabled || apiProgress">
             <span v-if="apiProgress" role="status" class="spinner-border spinner-border-sm"></span>
@@ -34,7 +35,9 @@
         </div>
       </div>
     </form>
-    {{ successMessage }}
+    <div v-else class="alert alert-success">
+      {{ successMessage }}
+    </div>
   </div>
 </template>
 <script setup>
@@ -48,12 +51,20 @@ const formState = reactive({
 })
 
 const apiProgress = ref(false)
-const successMessage = ref()
+const successMessage = ref('')
+const errorMessages = ref('')
 const submit = async () => {
   apiProgress.value = true
+  errorMessages.value = undefined
   const { passwordRepeat, ...body } = formState
-  const response = await axios.post('/api/v1/users', body)
-  successMessage.value = response.data.message
+  try {
+    const response = await axios.post('/api/v1/users', body)
+    successMessage.value = response?.data?.message
+  } catch {
+    errorMessages.value = 'Unexpected error occurred,please try again'
+  } finally {
+    apiProgress.value = false
+  }
 }
 const isDisabled = computed(() => {
   return formState.password || formState.passwordRepeat

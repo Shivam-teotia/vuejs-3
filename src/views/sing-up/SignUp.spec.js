@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import SignUp from './SignUp.vue'
 import userEvent from '@testing-library/user-event'
 import { setupServer } from "msw/node"
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, delay, http } from 'msw'
 
 let requestBody;
 let counter = 0;
@@ -17,6 +17,7 @@ const server = setupServer(
 )
 beforeEach(() => {
   counter = 0;
+  server.resetHandlers()
 })
 beforeAll(() => server.listen());
 afterAll(() => server.close());
@@ -110,6 +111,12 @@ describe('Sign Up', () => {
           })
         })
         it('displays spinner', async () => {
+          server.use(
+            http.post('/api/v1/users', async () => {
+              await delay('infinite')
+              return HttpResponse.json({})
+            })
+          )
           const { user, elements: { button } } = await setup();
           await user.click(button)
           expect(screen.getByRole('status')).toBeInTheDocument();
@@ -121,6 +128,61 @@ describe('Sign Up', () => {
           await user.click(button)
           const text = await screen.findByText('User create success');
           expect(text).toBeInTheDocument()
+        })
+        it('hides sign up form', async () => {
+          const { user, elements: { button } } = await setup()
+          const form = screen.getByTestId('form-sign-up')
+          await user.click(button)
+          await waitFor(() => {
+            expect(form).not.toBeVisible()
+          })
+        })
+      })
+      describe('when network failure occurs', () => {
+        it('displays generic message', async () => {
+          server.use(
+            http.post('/api/v1/users', () => {
+              return HttpResponse.error()
+            })
+          )
+          const { user, elements: { button } } = await setup()
+          await user.click(button);
+          const text = await screen.findByText('Unexpected error occurred,please try again');
+          expect(text).toBeInTheDocument()
+        })
+        it('hides spinner', async () => {
+          server.use(
+            http.post('/api/v1/users', () => {
+              return HttpResponse.error()
+            })
+          )
+          const { user, elements: { button } } = await setup()
+          await user.click(button);
+          await waitFor(() => {
+            expect(screen.queryByRole('status')).not.toBeInTheDocument();
+          })
+        })
+        describe('when user submits again', () => {
+          it('hides error when api request is progress', async () => {
+            let processedFirstRequest = false
+            server.use(
+              http.post('/api/v1/users', () => {
+                if (!processedFirstRequest) {
+                  processedFirstRequest = true
+                  return HttpResponse.error()
+                } else {
+                  return HttpResponse.json({})
+                }
+              })
+            )
+            const { user, elements: { button } } = await setup();
+            await user.click(button)
+            const text = await screen.findByText('Unexpected error occurred,please try again');
+            await user.click(button)
+            await waitFor(() => {
+              expect(text).not.toBeInTheDocument();
+            })
+          })
         })
       })
     })

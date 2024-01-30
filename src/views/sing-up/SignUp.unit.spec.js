@@ -34,6 +34,7 @@ describe('Sign Up', () => {
     describe('when user sets same value for password inputs', () => {
         describe('when user submits form', () => {
             it('sends username,email,password to the backend', async () => {
+                axios.post.mockResolvedValue({ data: {} })
                 const { user, elements: { button } } = await setup();
                 await user.click(button)
                 expect(axios.post).toHaveBeenCalledWith('/api/v1/users', {
@@ -42,13 +43,24 @@ describe('Sign Up', () => {
                     password: 'P4ssword'
                 })
             })
-
             describe('when there is an ongoing api call', () => {
                 it('does not allow clicking the button', async () => {
+                    axios.post.mockImplementation(
+                        () => new Promise((resolve) => setTimeout(() => resolve({ data: {} }, 1000)))
+                    )
                     const { user, elements: { button } } = await setup();
                     await user.click(button)
                     expect(axios.post).toHaveBeenCalledTimes(1)
                 })
+                it('displays spinner', async () => {
+                    axios.post.mockImplementation(
+                        () => new Promise((resolve) => setTimeout(() => resolve({ data: {} }, 1000)))
+                    )
+                    const { user, elements: { button } } = await setup();
+                    await user.click(button)
+                    expect(screen.getByRole('status')).toBeInTheDocument();
+                })
+
             })
         })
     })
