@@ -1,10 +1,11 @@
 import 'whatwg-fetch'
-import { render, screen, waitFor } from '@testing-library/vue'
+import { render, screen, waitFor } from '../../test/helper'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import SignUp from './SignUp.vue'
-import userEvent from '@testing-library/user-event'
+import { LanguageSelector } from '@/components'
 import { setupServer } from "msw/node"
 import { HttpResponse, delay, http } from 'msw'
+import { i18n } from '@/locale'
 
 let requestBody;
 let counter = 0;
@@ -21,9 +22,9 @@ beforeEach(() => {
 })
 beforeAll(() => server.listen());
 afterAll(() => server.close());
+
 const setup = async () => {
-  const user = userEvent.setup()
-  const result = render(SignUp)
+  const { user, result } = render(SignUp)
   const usernameInput = screen.getByLabelText('Username')
   const emailInput = screen.getByLabelText('E-Mail')
   const passwordInput = screen.getByLabelText('Password')
@@ -37,11 +38,36 @@ const setup = async () => {
     ...result,
     user,
     elements: {
-      button
+      button,
+      usernameInput,
+      emailInput,
+      passwordInput,
+      passwordRepeatInput
     }
   }
 }
 describe('Sign Up', () => {
+  describe.each([
+    { language: 'tr', text: 'SSSS Up' },
+    { language: 'en', text: 'Sign Up' }
+  ])('when user select $language', ({ language, text }) => {
+    it(`describe expected text`, async () => {
+      // const user = userEvent.setup();
+      const TempComponent = {
+        components: {
+          LanguageSelector
+        },
+        template: `
+                <span>{{$t('signUp')}} </span>
+                <LanguageSelector/>
+                `
+      }
+      const { user } = render(TempComponent)
+      await user.click(screen.getByTestId(`language-${language}-selector`))
+      expect(screen.getByText(text)).toBeInTheDocument();
+
+    })
+  })
   it('has Sign Up header', () => {
     render(SignUp)
     const header = screen.getByRole('heading', { name: 'Sign Up' })
@@ -80,9 +106,17 @@ describe('Sign Up', () => {
     render(SignUp)
     expect(screen.getByRole('button', { name: 'Sign Up' })).toBeDisabled()
   })
-  it('disables the button initially', () => {
+  it('does not display spinner', () => {
     render(SignUp);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  })
+  describe('when passwords do not match', () => {
+    it('displays occur', async () => {
+      const { user, elements: { passwordInput, passwordRepeatInput } } = await setup();
+      await user.type(passwordInput, '123');
+      await user.type(passwordRepeatInput, '456')
+      expect(screen.getByText('Password mismatch')).toBeInTheDocument()
+    })
   })
   describe('when user sets same value for password inputs', () => {
     it('enables button', async () => {
@@ -102,6 +136,25 @@ describe('Sign Up', () => {
         })
 
       })
+      describe.each([{ language: 'tr' }, { language: 'en' }])('when language is $language', ({ language }) => {
+        it('sends expected language in accept language header', async () => {
+          let acceptLanguage;
+          server.use(
+            http.post('/api/v1/users', async ({ request }) => {
+              acceptLanguage = request.headers.get('Accept-Language')
+              await delay('infinite')
+              return HttpResponse.json({})
+            })
+          )
+          const { user, elements: { button } } = await setup()
+          i18n.global.locale = language
+          await user.click(button);
+          await waitFor(() => {
+            expect(acceptLanguage).toBe(language)
+          })
+        })
+      })
+
       describe('when there is an ongoing api call', () => {
         it('does not allow clicking the button', async () => {
           const { user, elements: { button } } = await setup();
@@ -184,6 +237,78 @@ describe('Sign Up', () => {
             })
           })
         })
+        describe.each([
+          { field: 'username', message: 'Username cannot be null' },
+          { field: 'email', message: 'E-mail cannot be null' },
+          { field: 'password', message: 'Password cannot be null' }
+        ])('when $field is invalid', ({ field, message }) => {
+          it(`displays ${message}`, async () => {
+            server.use(
+              http.post('/api/v1/users', () => {
+                return HttpResponse.json({
+                  validationErrors: {
+                    [field]: message
+                  }
+                }, { status: 400 })
+              })
+            )
+            const { user, elements: { button } } = await setup();
+            await user.click(button)
+            const error = await screen.findByText(message)
+            expect(error).toBeInTheDocument()
+          })
+          it(`clears error after user updates ${field}`, async () => {
+            server.use(
+              http.post('/api/v1/users', () => {
+                return HttpResponse.json({
+                  validationErrors: {
+                    [field]: message
+                  }
+                }, { status: 400 })
+              })
+            )
+            const { user, elements } = await setup();
+            await user.click(elements.button)
+            const error = await screen.findByText(message)
+            await user.type(elements[`${field}Input`], 'updated')
+            // expect(screen.queryByText(message)).not.toBeInTheDocument()
+            expect(error).not.toBeInTheDocument()
+          })
+        })
+        // describe('when username is invalid', () => {
+        //   it('displays validation error', async () => {
+        //     server.use(
+        //       http.post('/api/v1/users', () => {
+        //         return HttpResponse.json({
+        //           validationErrors: {
+        //             username: 'Username cannot be null'
+        //           }
+        //         }, { status: 400 })
+        //       })
+        //     )
+        //     const { user, elements: { button } } = await setup();
+        //     await user.click(button)
+        //     const error = await screen.findByText('Username cannot be null')
+        //     expect(error).toBeInTheDocument()
+        //   })
+        // })
+        // describe('when email is invalid', () => {
+        //   it('displays validation error', async () => {
+        //     server.use(
+        //       http.post('/api/v1/users', () => {
+        //         return HttpResponse.json({
+        //           validationErrors: {
+        //             email: 'E-mail cannot be null'
+        //           }
+        //         }, { status: 400 })
+        //       })
+        //     )
+        //     const { user, elements: { button } } = await setup();
+        //     await user.click(button)
+        //     const error = await screen.findByText('E-mail cannot be null')
+        //     expect(error).toBeInTheDocument()
+        //   })
+        // })
       })
     })
   })
