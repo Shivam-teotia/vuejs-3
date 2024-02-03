@@ -1,8 +1,8 @@
 import 'whatwg-fetch'
 import { render, screen, waitFor } from '../../test/helper'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import SignUp from './SignUp.vue'
 import { LanguageSelector } from '@/components'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { setupServer } from "msw/node"
 import { HttpResponse, delay, http } from 'msw'
 import { i18n } from '@/locale'

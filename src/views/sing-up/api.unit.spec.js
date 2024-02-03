@@ -1,5 +1,5 @@
 vi.mock('axios');
-vi.mock('@/locales', () => ({
+vi.mock('@/locale', () => ({
     i18n: {
         global: {
             locale: 'ab'

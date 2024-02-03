@@ -1,11 +1,19 @@
 <script setup>
-import SignUp from '@/views/sing-up/SignUp.vue'
-import { LanguageSelector } from './components'
+import { LanguageSelector, NavBar } from './components'
 </script>
 
 <template>
-  <main class="container">
-    <LanguageSelector />
-    <SignUp />
-  </main>
+  <div>
+    <NavBar />
+    <main class="container mt-3">
+      <div>
+        <router-link to="/activation/123">Activatioin 123</router-link>
+      </div>
+      <div>
+        <router-link to="/activation/456">Activatioin 456</router-link>
+      </div>
+      <LanguageSelector />
+      <router-view></router-view>
+    </main>
+  </div>
 </template>
