@@ -26,26 +26,26 @@
           :help="passwordMismatchErroe"
           v-model="formState.passwordRepeat"
         />
-        <div v-if="errorMessages" class="alert alert-danger">{{ errorMessages }}</div>
+        <Alert v-if="errorMessages" class="alert alert-danger">{{ errorMessages }}</Alert>
         <div class="text-center">
           <button class="btn btn-primary" :disabled="isDisabled || apiProgress">
-            <span v-if="apiProgress" role="status" class="spinner-border spinner-border-sm"></span>
+            <Spinner v-if="apiProgress" />
             {{ $t('signUp') }}
           </button>
         </div>
       </div>
     </form>
-    <div v-else class="alert alert-success">
+    <Alert v-else>
       {{ successMessage }}
-    </div>
+    </Alert>
   </div>
 </template>
 <script setup>
 import { signUp } from './api'
 import { computed, reactive, ref, watch } from 'vue'
-import { AppInput } from '../../components'
+import { AppInput, Spinner, Alert } from '../../components'
 import { useI18n } from 'vue-i18n'
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const formState = reactive({
   username: '',
   email: '',

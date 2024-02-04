@@ -1,9 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { setupServer } from "msw/node"
 import { screen } from '@testing-library/vue';
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, delay, http } from 'msw'
 import { render, waitFor, router } from '@/test/helper';
 import Activation from "./Activation.vue"
+import { i18n } from '@/locale';
 
 let counter = 0;
 let token;
@@ -62,7 +63,7 @@ describe('Activation', () => {
                 })
             )
             await setup('/activation/123')
-            const text = await screen.findByText('Unexpected error occured,please try again')
+            const text = await screen.findByText('Unexpected error occurred,please try again')
             expect(text).toBeInTheDocument()
         })
     })
@@ -123,6 +124,24 @@ describe('Activation', () => {
         await resolveFunc()
         await waitFor(() => {
             expect(spinner).not.toBeInTheDocument()
+        })
+    })
+    describe.each([
+        { language: 'en' },
+        { language: 'tr' }
+    ])('when langauge is $language', ({ language }) => {
+        it(`it sends expected language in accept language header`, async () => {
+            i18n.global.locale = language
+            let acceptLanguage
+            server.use(
+                http.patch('/api/v1/users/:token/active', async ({ request }) => {
+                    acceptLanguage = request.headers.get('Accept-Language')
+                    await delay('infinite')
+                    return HttpResponse.json({})
+                })
+            )
+            await setup('/activation/123')
+            await waitFor(() => expect(acceptLanguage).toBe(language))
         })
     })
 })
