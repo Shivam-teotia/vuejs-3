@@ -28,10 +28,13 @@
         />
         <Alert v-if="errorMessages" class="alert alert-danger">{{ errorMessages }}</Alert>
         <div class="text-center">
-          <button class="btn btn-primary" :disabled="isDisabled || apiProgress">
+          <AppButton :is-disabled="isDisabled" :api-progress="apiProgress">
+            {{ $t('signUp') }}
+          </AppButton>
+          <!-- <button class="btn btn-primary" :disabled="isDisabled || apiProgress">
             <Spinner v-if="apiProgress" />
             {{ $t('signUp') }}
-          </button>
+          </button> -->
         </div>
       </div>
     </form>
@@ -43,7 +46,7 @@
 <script setup>
 import { signUp } from './api'
 import { computed, reactive, ref, watch } from 'vue'
-import { AppInput, Spinner, Alert } from '../../components'
+import { AppInput, AppButton, Alert } from '../../components'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const formState = reactive({

@@ -3,6 +3,8 @@ import SignUp from '../views/sing-up/SignUp.vue'
 import Home from "../views/home/Home.vue";
 import Activation from '@/views/activation/Activation.vue'
 import Request from "@/views/password-reset/request/Request.vue"
+import Set from "@/views/password-reset/set/Set.vue"
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -25,6 +27,11 @@ const router = createRouter({
       path: '/password-reset/request',
       name: 'password-reset',
       component: Request
+    },
+    {
+      path: '/password-reset/set',
+      name: 'password-set',
+      component: Set
     }
   ]
 })
