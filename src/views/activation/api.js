@@ -1,11 +1,4 @@
-import { i18n } from "@/locale";
-import axios from "axios";
+import http from "@/lib/http"
 export const activate = (token) => {
-    return axios.patch(`/api/v1/users/${token}/activate`, {
-
-    }, {
-        headers: {
-            'Accept-Language': i18n.global.locale
-        }
-    })
+    return http.patch(`/api/v1/users/${token}/active`)
 }
