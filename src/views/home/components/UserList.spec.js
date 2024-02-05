@@ -151,5 +151,12 @@ describe('UserList', () => {
             })
         })
     })
-
+    describe('when user clicks username', () => {
+        it('navigates to user page', async () => {
+            const { user } = render(UserList)
+            const link = await screen.findByText('user1')
+            await user.click(link)
+            expect(router.currentRoute.value.path).toBe('/user/1')
+        })
+    })
 })
