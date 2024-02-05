@@ -3,31 +3,30 @@
     class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 mt-5"
     data-testid="password-reset-request-page"
   >
-    <form class="card" @submit.prevent="submit">
-      <div class="card-header" text-center>
-        <h1>{{ $t('passwordReset.request') }}</h1>
-      </div>
-      <div class="card-body">
-        <AppInput id="e-mail" :label="$t('email')" :help="errors.email" v-model="email" />
-        <Alert v-if="successMessage">{{ successMessage }}</Alert>
-        <Alert v-if="errorMessage" variant="danger">{{ errorMessage }}</Alert>
-        <div class="text-center">
-          <AppButton :api-progress="apiProgress" :is-disabled="!email">
-            {{ $t('passwordReset.request') }}
-          </AppButton>
-          <!-- <button class="btn btn-primary" :disabled="!email || apiProgress">
-            <Spinner v-if="apiProgress" />
-            {{ $t('passwordReset.request') }}
-          </button> -->
-        </div>
-      </div>
+    <form @submit.prevent="submit">
+      <Card class="card">
+        <template v-slot:header>
+          <h1>{{ $t('passwordReset.request') }}</h1>
+        </template>
+        <template v-slot:body>
+          <AppInput id="e-mail" :label="$t('email')" :help="errors.email" v-model="email" />
+          <Alert v-if="successMessage">{{ successMessage }}</Alert>
+          <Alert v-if="errorMessage" variant="danger">{{ errorMessage }}</Alert>
+          <div class="text-center">
+            <AppButton :api-progress="apiProgress" :is-disabled="!email">
+              {{ $t('passwordReset.request') }}
+            </AppButton>
+          </div>
+        </template>
+      </Card>
+      <div class="card-body"></div>
     </form>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
-import { AppButton } from '@/components'
+import { AppButton, Card } from '@/components'
 import Spinner from '../../../components/Spinner.vue'
 import AppInput from '../../../components/AppInput.vue'
 import { passwordReset } from './api'

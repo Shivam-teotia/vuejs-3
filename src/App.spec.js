@@ -1,7 +1,8 @@
 vi.mock('@/views/activation/Activation.vue')
+vi.mock('@/views/home/components/UserList.vue')
 import { render, router, screen, waitFor } from "./test/helper";
 import App from './App.vue'
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 const setup = async (path) => {
     router.push(path)
     await router.isReady()
