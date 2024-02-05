@@ -5,11 +5,11 @@
         class="rounded-circle shadow"
         width="200"
         height="200"
-        alt="profile"
+        :alt="user.username + 'profile'"
         src="@/assets/profile.png"
       />
     </template>
-    <template v-slotL:body>
+    <template v-slot:body>
       <div class="text-center">
         <h3>{{ user.username }}</h3>
       </div>

@@ -9,7 +9,7 @@ import { i18n } from '@/locale';
 let counter = 0;
 let id;
 const server = setupServer(
-    http.patch('/api/v1/users/:id', ({ params }) => {
+    http.get('/api/v1/users/:id', ({ params }) => {
         counter += 1;
         id = params.id
         return HttpResponse.json({ id: 1, username: 'user1', email: 'user1@gmail.com', image: null })
@@ -58,7 +58,7 @@ describe('User Page', () => {
     describe('when newtwork error occurs', () => {
         it('displays generic error message', async () => {
             server.use(
-                http.patch('/api/v1/users/:id', () => {
+                http.get('/api/v1/users/:id', () => {
                     return HttpResponse.error()
                 })
             )
@@ -74,7 +74,7 @@ describe('User Page', () => {
                 resolveFunc = resolve
             })
             server.use(
-                http.patch('/api/v1/users/:id', async ({ }) => {
+                http.get('/api/v1/users/:id', async ({ }) => {
                     await promise
                     return HttpResponse.json({ message: 'User not found' }, { status: 400 })
                 })
@@ -94,7 +94,7 @@ describe('User Page', () => {
                 resolveFunc = resolve
             })
             server.use(
-                http.patch('/api/v1/users/:id', async ({ }) => {
+                http.get('/api/v1/users/:id', async () => {
                     await promise
                     return HttpResponse.json({
                         id: 1,
@@ -118,7 +118,7 @@ describe('User Page', () => {
             resolveFunc = resolve
         })
         server.use(
-            http.patch('/api/v1/users/:id', async ({ }) => {
+            http.get('/api/v1/users/:id', async ({ }) => {
                 await promise
                 return HttpResponse.json({
                     id: 1,
@@ -144,7 +144,7 @@ describe('User Page', () => {
             i18n.global.locale = language
             let acceptLanguage
             server.use(
-                http.patch('/api/v1/users/:id', async ({ request }) => {
+                http.get('/api/v1/users/:id', async ({ request }) => {
                     acceptLanguage = request.headers.get('Accept-Language')
                     await delay('infinite')
                     return HttpResponse.json({})
