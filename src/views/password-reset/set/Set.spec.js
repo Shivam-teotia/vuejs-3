@@ -115,7 +115,7 @@ describe('Password Reset set page', () => {
                 }
             )
             describe('when success response is received', () => {
-                it('displays message received from backend', async () => {
+                it('navigates to login page', async () => {
                     server.use(
                         http.patch('/api/v1/users/:resetToken/password', async ({ request, params }) => {
                             return HttpResponse.json({ message: 'Password update success' })
@@ -123,8 +123,9 @@ describe('Password Reset set page', () => {
                     )
                     const { user, elements: { button } } = await setup()
                     await user.click(button)
-                    const text = await screen.findByText('Password update success')
-                    expect(text).toBeInTheDocument()
+                    await waitFor(() => {
+                        expect(router.currentRoute.value.path).toBe('/login')
+                    })
                 })
             })
 

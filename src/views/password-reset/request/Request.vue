@@ -26,7 +26,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { AppButton, Card } from '@/components'
+import { AppButton, Card, Alert } from '@/components'
 import Spinner from '../../../components/Spinner.vue'
 import AppInput from '../../../components/AppInput.vue'
 import { passwordReset } from './api'

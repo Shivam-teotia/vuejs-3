@@ -8,12 +8,13 @@
     "genericError": "Unexpected error occurred,please try again",
     "passwordReset":{
         "request":"Reset password",
-        "set":"Set password"
+        "set":"Set password",
+        "forgot":"Forgot password"
     },
     "userList":{
         "header":"Users",
         "next":"Next",
         "previous":"Previous"
     },
-    "login":"Login"
+    "login":"LADFAD"
 }

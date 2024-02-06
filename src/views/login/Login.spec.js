@@ -142,7 +142,7 @@ describe('Login Page', () => {
                         i18n.global.locale = language
                         await user.click(button)
                         await waitFor(() => {
-                            expect(acceptLanguage).toBeInTheDocument(language);
+                            expect(acceptLanguage).toBe(language);
                         })
                     })
                 })
@@ -170,7 +170,88 @@ describe('Login Page', () => {
                         expect(screen.queryByRole('status')).not.toBeInTheDocument();
                     })
                 })
+                describe('when user submits again', () => {
+                    it('hides error when api request is progress', async () => {
+                        let processedFirstRequest = false
+                        server.use(
+                            http.post('/api/v1/auth', () => {
+                                if (!processedFirstRequest) {
+                                    processedFirstRequest = true
+                                    return HttpResponse.error()
+                                } else {
+                                    return HttpResponse.json({
+                                        id: 1,
+                                        username: 'email',
+                                        email: 'user1@gmail.com',
+                                        image: null
+                                    })
+                                }
+                            })
+                        )
+                        const { user, elements: { button } } = await setup();
+                        await user.click(button)
+                        const text = await screen.findByText('Unexpected error occurred,please try again');
+                        await user.click(button)
+                        await waitFor(() => {
+                            expect(text).not.toBeInTheDocument();
+                        })
+                    })
+                })
             })
         })
+        describe.each([
+            { field: 'email', error: 'E-mail cannot be null' },
+            { field: 'password', error: 'Password cannot be null' }
+        ])('when $field is invalid', ({ field, error }) => {
+            it(`displays ${error}`, async () => {
+                server.use(
+                    http.post('/api/v1/auth', () => {
+                        return HttpResponse.json({
+                            validationErrors: {
+                                [field]: error
+                            }
+                        }, { status: 400 })
+                    })
+                )
+                const { user, elements: { button } } = await setup();
+                await user.click(button)
+                const error1 = await screen.findByText(error)
+                expect(error1).toBeInTheDocument()
+            })
+            // it(`clears error after user updates ${field}`, async () => {
+            //     server.use(
+            //         http.post('/api/v1/users', () => {
+            //             return HttpResponse.json({
+            //                 validationErrors: {
+            //                     [field]: error
+            //                 }
+            //             }, { status: 400 })
+            //         })
+            //     )
+            //     const { user, elements } = await setup();
+            //     await user.click(elements.button)
+            //     const error1 = await screen.findByText(error)
+            //     await user.type(elements[`${field}Input`], 'updated')
+            //     expect(error1).not.toBeInTheDocument()
+            // })
+        })
+        // describe('when there is no validation error', () => {
+        //     it('displays error returned from server', async () => {
+        //         server.use(
+        //             http.post('/api/v1/auth', () => {
+        //                 return HttpResponse.json(
+        //                     {
+        //                         message: 'Incorrect credentials'
+        //                     },
+        //                     { status: 401 }
+        //                 )
+        //             })
+        //         )
+        //         const { user, elements: { button } } = await setup()
+        //         await user.click(button)
+        //         const error = await screen.findByText('Incorrect credentials')
+        //         expect(error).toBeInTheDocument()
+        //     })
+        // })
     })
 })

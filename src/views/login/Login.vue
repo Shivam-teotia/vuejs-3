@@ -26,6 +26,11 @@
             </AppButton>
           </div>
         </template>
+        <template v-slot:footer>
+          <router-link to="/password-reset/request">
+            {{ $t('passwordReset.forgot') }}
+          </router-link>
+        </template>
       </Card>
     </form>
   </div>
@@ -38,9 +43,12 @@ import Alert from '../../components/Alert.vue'
 import AppButton from '../../components/AppButton.vue'
 import Card from '../../components/Card.vue'
 import { useI18n } from 'vue-i18n'
-import { LogIn } from './api'
-
+import { Login } from './api'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+const { setLoggedIn } = useAuthStore()
 const { t } = useI18n()
+const router = useRouter()
 const formState = reactive({
   password: '',
   email: ''
@@ -72,13 +80,17 @@ const submit = async () => {
   apiProgress.value = true
   errorMessage.value = undefined
   try {
-    await LogIn(formState)
-  } catch (error) {
-    if (error.response?.status == 400) {
-      errors.value = error.response.data.validationErrors
-    } else if (error.response?.data?.message) {
-      errorMessage.value = error.response.data.message
-    } else errorMessage.value = t('genericError')
+    const response = await Login(formState)
+    setLoggedIn(response.data)
+    router.push('/')
+  } catch (apiError) {
+    if (apiError.response?.status === 400) {
+      errors.value = apiError.response.data.validationErrors
+    } else if (apiError.response?.data?.validationErrors) {
+      errorMessage.value = apiError.response.data.validationErrors
+    } else {
+      errorMessage.value = t('genericError')
+    }
   } finally {
     apiProgress.value = false
   }
