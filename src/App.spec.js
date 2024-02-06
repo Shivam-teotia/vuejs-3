@@ -18,6 +18,7 @@ describe('Routing', () => {
     { path: '/password-reset/set', pageId: 'password-reset-set-page' },
     { path: '/user/1', pageId: 'user-page' },
     { path: '/user/2', pageId: 'user-page' },
+    { path: '/login', pageId: 'login-page' },
     ])('when path is $path', ({ path, pageId }) => {
         it(`displays ${pageId} `, async () => {
             await setup(path)
@@ -26,7 +27,9 @@ describe('Routing', () => {
         })
     })
     describe.each([{ initialPath: '/', clickingTo: 'link-signup-page', visiblePage: 'signup-page' },
-    { initialPath: '/signup', clickingTo: 'link-home-page', visiblePage: 'home-page' }])('when paht is initialPath', ({ initialPath, clickingTo, visiblePage }) => {
+    { initialPath: '/signup', clickingTo: 'link-home-page', visiblePage: 'home-page' },
+    { initialPath: '/', clickingTo: 'link-login-page', visiblePage: 'login-page' },
+    ])('when paht is initialPath', ({ initialPath, clickingTo, visiblePage }) => {
         describe(`when user clicks ${clickingTo}`, () => {
             it(`displays ${visiblePage}`, async () => {
                 const { user } = await setup(initialPath)

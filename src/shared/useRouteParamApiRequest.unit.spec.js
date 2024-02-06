@@ -67,7 +67,7 @@ describe('when apiFn rejects', () => {
     })
     describe('when response message exists', () => {
         it('should return expected result', async () => {
-            const mockApiFn = vi.fn().mockRejectedValue()
+            const mockApiFn = vi.fn().mockRejectedValue({ response: '' })
             const { status, data, error } = useRouteParamApiRequest(mockApiFn, 'token')
             await waitFor(() => {
                 expect(status.value).toBe('fail')
